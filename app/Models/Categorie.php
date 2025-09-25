@@ -8,4 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Categorie extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['name', 'description'];
+
+    public function puzzles()
+    {
+        return $this->hasMany(Puzzle::class, 'categorie_id'); // Adapte le nom de la clé étrangère si nécessaire
+    }
 }

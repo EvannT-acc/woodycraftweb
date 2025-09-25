@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PuzzleController;
-
+use App\Models\Categorie;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,15 +23,23 @@ Route::get('/', function () {
 
 Route::get('/about', [PageController::class, 'about'])->name('about');
 
+// MODIFIÉ : Dashboard avec catégories
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $categories = Categorie::with('puzzles')->get();
+    return view('dashboard', compact('categories'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'create'])->name('profile.create');
+    // CORRECTION : Une seule route GET pour profile.edit
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // NOUVELLE ROUTE : Afficher les puzzles d'une catégorie
+    Route::get('/categories/{categorie}', function (Categorie $categorie) {
+        $categorie->load('puzzles');
+        return view('categories.show', compact('categorie'));
+    })->name('categories.show');
 });
 
 Route::resource('puzzles', PuzzleController::class)->middleware('auth');

@@ -7,5 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Puzzle extends Model
 {
-    protected $fillable = ['name', 'category', 'description', 'image', 'price'];
+    use HasFactory;
+
+    protected $fillable = ['nom', 'categorie_id', 'description', 'image', 'prix'];
+
+    // Relation avec la catégorie
+    public function categorie()
+    {
+        return $this->belongsTo(Categorie::class);
+    }
 }
