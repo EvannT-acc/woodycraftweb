@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('puzzles', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('category');
+            $table->string('nom');
+            $table->string('categories');
             $table->text('description');
             $table->string('image')->nullable();
-            $table->decimal('price', 8, 2);
+            $table->decimal('prix', 8, 2);
             $table->timestamps();
         });
         
