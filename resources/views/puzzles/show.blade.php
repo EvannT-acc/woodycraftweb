@@ -7,10 +7,10 @@
 
     <x-puzzles-card>
         <h3 class="font-semibold text-xl text-gray-800"> @lang('Nom') </h3>
-        <p>{{ $puzzle->name }}</p>
+        <p>{{ $puzzle->nom }}</p>
 
         <h3 class="font-semibold text-xl text-gray-800 pt-2"> @lang('Categorie') </h3>
-        <p>{{ $puzzle->category }}</p>
+        <p>{{ $puzzle->categories }}</p>
 
         <h3 class="font-semibold text-xl text-gray-800 pt-2"> @lang('Description') </h3>
         <p>{{ $puzzle->description }}</p>

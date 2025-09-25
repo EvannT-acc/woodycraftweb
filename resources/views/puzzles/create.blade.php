@@ -18,18 +18,18 @@
 
             <!-- Nom -->
             <div>
-                <x-input-label for="name" :value="__('Name')" />
+                <x-input-label for="nom" :value="__('nom')" />
                 <x-text-input id="name" class="block mt-1 w-full" type="text" 
-                    name="name" :value="old('name')" required autofocus />
-                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                    name="nom" :value="old('nom')" required autofocus />
+                <x-input-error :messages="$errors->get('nom')" class="mt-2" />
             </div>
 
             <!-- Catégorie -->
             <div class="mt-4">
-                <x-input-label for="category" :value="__('Category')" />
-                <x-text-input id="category" class="block mt-1 w-full" type="text" 
-                    name="category" :value="old('category')" required />
-                <x-input-error :messages="$errors->get('category')" class="mt-2" />
+                <x-input-label for="categories" :value="__('categories')" />
+                <x-text-input id="categories" class="block mt-1 w-full" type="text" 
+                    name="categories" :value="old('categories')" required />
+                <x-input-error :messages="$errors->get('categories')" class="mt-2" />
             </div>
 
             <!-- Description -->
@@ -41,10 +41,10 @@
 
             <!-- Prix -->
             <div class="mt-4">
-                <x-input-label for="price" :value="__('Price')" />
-                <x-text-input id="price" class="block mt-1 w-full" type="number" step="0.01" 
-                    name="price" :value="old('price')" required />
-                <x-input-error :messages="$errors->get('price')" class="mt-2" />
+                <x-input-label for="prix" :value="__('prix')" />
+                <x-text-input id="prix" class="block mt-1 w-full" type="number" step="0.01" 
+                    name="prix" :value="old('prix')" required />
+                <x-input-error :messages="$errors->get('prix')" class="mt-2" />
             </div>
 
             <div class="flex items-center justify-end mt-4">

@@ -76,10 +76,10 @@ class PuzzleController extends Controller
      public function update(Request $request, Puzzle $puzzle)
      {
          $data = $request->validate([
-             'name' => 'required|max:100',
-             'category' => 'required|max:100',
+             'nom' => 'required|max:100',
+             'categories' => 'required|max:100',
              'description' => 'required|max:500',
-             'price' => 'required|numeric|between:0,99.99',
+             'prix' => 'required|numeric|between:0,99.99',
          ]);
      
          $puzzle->update($data);

@@ -18,17 +18,17 @@
 
             <!-- Nom -->
             <div>
-                <x-input-label for="name" :value="__('Nom')" />
-                <x-text-input id="name" class="block mt-1 w-full" type="text"
-                    name="name" :value="old('name', $puzzle->name)" required autofocus />
-                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                <x-input-label for="Nom" :value="__('Nom')" />
+                <x-text-input id="Nom" class="block mt-1 w-full" type="text"
+                    name="Nom" :value="old('Nom', $puzzle->Nom)" required autofocus />
+                <x-input-error :messages="$errors->get('Nom')" class="mt-2" />
             </div>
 
             <!-- Catégorie -->
             <div class="mt-4">
-                <x-input-label for="category" :value="__('Categorie')" />
-                <x-textarea id="category" class="block mt-1 w-full" name="category">{{ old('category', $puzzle->category) }}</x-textarea>
-                <x-input-error :messages="$errors->get('category')" class="mt-2" />
+                <x-input-label for="categories" :value="__('categories')" />
+                <x-textarea id="categories" class="block mt-1 w-full" name="categories">{{ old('category', $puzzle->category) }}</x-textarea>
+                <x-input-error :messages="$errors->get('categories')" class="mt-2" />
             </div>
 
             <!-- Description -->
@@ -40,10 +40,10 @@
 
             <!-- Prix -->
             <div class="mt-4">
-                <x-input-label for="price" :value="__('Prix')" />
-                <x-text-input id="price" class="block mt-1 w-full" type="number" step="0.01"
-                    name="price" :value="old('price', $puzzle->price)" required />
-                <x-input-error :messages="$errors->get('price')" class="mt-2" />
+                <x-input-label for="prix" :value="__('Prix')" />
+                <x-text-input id="prix" class="block mt-1 w-full" type="number" step="0.01"
+                    name="prix" :value="old('prix', $puzzle->prix)" required />
+                <x-input-error :messages="$errors->get('prix')" class="mt-2" />
             </div>
 
             <div class="flex items-center justify-end mt-4">
