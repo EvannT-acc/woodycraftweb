@@ -19,69 +19,82 @@ class PuzzleController extends Controller
 
     public function index()
     {
-        //
+        $puzzles = Puzzle::all();
+    return view('puzzles.index', compact('puzzles'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
+
     public function create()
     {
-        //
+        return view('puzzles.create');
     }
+
 
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'category' => 'required|string|max:255',
-        'description' => 'required|string',
-        'price' => 'required|numeric|min:0',
-        'image' => 'nullable|image|max:2048',
+        $data = $request->validate([
+            'name' => 'required|max:100',
+            'category' => 'required|max:100',
+            'description' => 'required|max:500',
+            'price' => 'required|numeric|between:0,99.99',
     ]);
 
-    if ($request->hasFile('image')) {
-        $validated['image'] = $request->file('image')->store('puzzles', 'public');
+    Puzzle::create($data);
+
+    return redirect()->route('puzzles.create')->with('message', 'Puzzle créé avec succès !');
     }
-
-    Puzzle::create($validated);
-
-    return redirect()->route('puzzles.index')->with('success', 'Puzzle créé avec succès !');
-    }
-
 
     /**
      * Display the specified resource.
      */
+
     public function show(Puzzle $puzzle)
     {
-        //
+        return view('puzzles.show', compact('puzzle'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
+
     public function edit(Puzzle $puzzle)
     {
-        //
+        return view('puzzles.edit', compact('puzzle'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Puzzle $puzzle)
-    {
-        //
-    }
+
+     public function update(Request $request, Puzzle $puzzle)
+     {
+         $data = $request->validate([
+             'name' => 'required|max:100',
+             'category' => 'required|max:100',
+             'description' => 'required|max:500',
+             'price' => 'required|numeric|between:0,99.99',
+         ]);
+     
+         $puzzle->update($data);
+     
+         return redirect()->route('puzzles.edit', $puzzle)->with('message', 'Puzzle mis à jour avec succès !');
+     }
+     
 
     /**
      * Remove the specified resource from storage.
      */
+
     public function destroy(Puzzle $puzzle)
     {
-        //
+        $puzzle->delete();
+    return redirect()->route('puzzles.index')->with('message', 'Puzzle supprimé avec succès !');
     }
 }
