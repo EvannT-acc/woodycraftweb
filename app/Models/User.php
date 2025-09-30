@@ -18,7 +18,10 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'nom',
+        'prenom',
+        'role',
+        'telephone',
         'email',
         'password',
     ];
@@ -42,4 +45,25 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Récupérer le nom complet de l'utilisateur.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->prenom} {$this->nom}";
+    }
+
+    /**
+     * Relations possibles (exemples à adapter plus tard).
+     */
+    public function adresses()
+    {
+        return $this->hasMany(Adresse::class);
+    }
+
+    public function paniers()
+    {
+        return $this->hasMany(Panier::class);
+    }
 }

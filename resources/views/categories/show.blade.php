@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Puzzles - {{ $categorie->name }}
+            Puzzles - {{ $categorie->nom }}
         </h2>
     </x-slot>
 
@@ -16,7 +16,7 @@
             <!-- Info catégorie -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ $categorie->name }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ $categorie->nom }}</h1>
                     @if($categorie->description)
                         <p class="text-gray-600 mb-2">{{ $categorie->description }}</p>
                     @endif
@@ -30,18 +30,17 @@
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                         <div class="p-6">
                             @if($puzzle->image)
-                            <img src="{{ asset('images/' . $puzzle->image) }}" 
-                                alt="{{ $puzzle->name }}" 
-                                class="w-32 h-32 object-cover mx-auto rounded-md">
-
+                                <img src="{{ asset('images/' . $puzzle->image) }}" 
+                                     alt="{{ $puzzle->nom }}" 
+                                     class="w-32 h-32 object-cover mx-auto rounded-md">
                             @else
                                 <div class="w-full h-48 bg-gray-100 mb-4 rounded flex items-center justify-center">
                                     <span class="text-gray-400 text-sm">Aucune image</span>
                                 </div>
                             @endif
                             
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate" title="{{ $puzzle->name }}">
-                                {{ $puzzle->name }}
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate" title="{{ $puzzle->nom }}">
+                                {{ $puzzle->nom }}
                             </h3>
                             
                             <p class="text-gray-600 text-sm mb-3 line-clamp-2">
@@ -49,7 +48,7 @@
                             </p>
                             
                             <p class="text-lg font-bold text-blue-600 mb-4">
-                                {{ number_format($puzzle->price, 2) }} €
+                                {{ number_format($puzzle->prix, 2, ',', ' ') }} €
                             </p>
                             
                             <div class="mt-4">

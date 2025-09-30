@@ -3,6 +3,13 @@
         <h2 class="font-bold text-2xl text-gray-900 leading-tight">
             {{ __('Tableau de bord') }}
         </h2>
+        <p class="text-gray-600 mt-1">
+            Bienvenue, <span class="font-semibold">{{ Auth::user()->prenom }} {{ Auth::user()->nom }}</span>
+            <span class="ml-2 px-2 py-1 text-xs rounded-full 
+                {{ Auth::user()->role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                {{ ucfirst(Auth::user()->role) }}
+            </span>
+        </p>
     </x-slot>
 
     <div class="py-10 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -28,7 +35,7 @@
                                 
                                 <!-- Image de la catégorie -->
                                 @if($categorie->image)
-                                    <div class="w-full h-10 mx-auto overflow-hidden rounded-md border border-gray-200 mb-4">
+                                    <div class="w-full h-40 mx-auto overflow-hidden rounded-md border border-gray-200 mb-4">
                                         <img src="{{ asset('images/' . $categorie->image) }}" 
                                              alt="{{ $categorie->nom }}" 
                                              class="w-full h-full object-cover">
