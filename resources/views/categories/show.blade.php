@@ -30,9 +30,10 @@
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                         <div class="p-6">
                             @if($puzzle->image)
-                                <img src="{{ asset('storage/' . $puzzle->image) }}" 
-                                     alt="{{ $puzzle->name }}" 
-                                     class="w-full h-48 object-cover mb-4 rounded">
+                            <img src="{{ asset('images/' . $puzzle->image) }}" 
+                                alt="{{ $puzzle->name }}" 
+                                class="w-32 h-32 object-cover mx-auto rounded-md">
+
                             @else
                                 <div class="w-full h-48 bg-gray-100 mb-4 rounded flex items-center justify-center">
                                     <span class="text-gray-400 text-sm">Aucune image</span>
