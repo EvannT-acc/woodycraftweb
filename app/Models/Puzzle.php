@@ -2,18 +2,29 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Puzzle extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nom', 'categorie_id', 'description', 'image', 'prix'];
+    protected $fillable = [
+        'title',
+        'description',
+        'difficulty',
+        'price',
+        'categorie_id',
+        'image_path',
+    ];
 
-    // Relation avec la catégorie
     public function categorie()
     {
-        return $this->belongsTo(Categorie::class);
+        return $this->belongsTo(Categorie::class, 'categorie_id');
+    }
+
+    public function imageUrl(): string
+    {
+        return asset('storage/' . ($this->image_path ?: 'placeholders/puzzle.png'));
     }
 }
