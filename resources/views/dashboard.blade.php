@@ -3,13 +3,22 @@
         <h2 class="font-bold text-2xl text-gray-900 leading-tight">
             {{ __('Tableau de bord') }}
         </h2>
-        <p class="text-gray-600 mt-1">
-            Bienvenue, <span class="font-semibold">{{ Auth::user()->prenom }} {{ Auth::user()->nom }}</span>
-            <span class="ml-2 px-2 py-1 text-xs rounded-full 
-                {{ Auth::user()->role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
-                {{ ucfirst(Auth::user()->role) }}
-            </span>
-        </p>
+        @auth
+            @php($user = Auth::user())
+            @php($displayName = $user?->display_name ?? $user?->email ?? '')
+            <p class="text-gray-600 mt-1">
+                Bienvenue, <span class="font-semibold">{{ $displayName }}</span>
+                @if(!empty($user->role))
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full {{ $user->role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                        {{ ucfirst($user->role) }}
+                    </span>
+                @endif
+            </p>
+        @else
+            <p class="text-gray-600 mt-1">
+                Découvrez toutes nos catégories de puzzles sans créer de compte. Connectez-vous pour personnaliser votre expérience.
+            </p>
+        @endauth
     </x-slot>
 
     <div class="py-10 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -76,10 +85,17 @@
                     @if($categories->isEmpty())
                         <div class="col-span-full text-center py-12 bg-white rounded-lg shadow">
                             <p class="text-gray-600 mb-4">Aucune catégorie disponible pour le moment.</p>
-                            <a href="{{ route('puzzles.create') }}" 
-                               class="inline-block px-6 py-3 bg-black text-white rounded-lg text-base font-semibold hover:bg-gray-900 shadow-md">
-                                Créer le premier puzzle
-                            </a>
+                            @auth
+                                <a href="{{ route('puzzles.create') }}"
+                                   class="inline-block px-6 py-3 bg-black text-white rounded-lg text-base font-semibold hover:bg-gray-900 shadow-md">
+                                    Créer le premier puzzle
+                                </a>
+                            @else
+                                <a href="{{ route('register') }}"
+                                   class="inline-block px-6 py-3 bg-black text-white rounded-lg text-base font-semibold hover:bg-gray-900 shadow-md">
+                                    Créer un compte pour contribuer
+                                </a>
+                            @endauth
                         </div>
                     @endif
                 </div>

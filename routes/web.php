@@ -18,7 +18,7 @@ use App\Models\Categorie;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('dashboard');
 });
 
 Route::get('/about', [PageController::class, 'about'])->name('about');
@@ -26,19 +26,21 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/dashboard', function () {
     $categories = Categorie::with('puzzles')->get();
     return view('dashboard', compact('categories'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('dashboard');
+
+Route::get('/categories/{categorie}', function (Categorie $categorie) {
+    $categorie->load('puzzles');
+    return view('categories.show', compact('categorie'));
+})->name('categories.show');
+
+Route::resource('puzzles', PuzzleController::class)->only(['index', 'show']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
-    Route::get('/categories/{categorie}', function (Categorie $categorie) {
-        $categorie->load('puzzles');
-        return view('categories.show', compact('categorie'));
-    })->name('categories.show');
-});
 
-Route::resource('puzzles', PuzzleController::class)->middleware('auth');
+    Route::resource('puzzles', PuzzleController::class)->except(['index', 'show']);
+});
 
 require __DIR__.'/auth.php';
