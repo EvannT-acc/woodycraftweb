@@ -51,7 +51,23 @@ class User extends Authenticatable
      */
     public function getFullNameAttribute(): string
     {
-        return "{$this->prenom} {$this->nom}";
+        return trim(collect([$this->prenom, $this->nom])->filter()->join(' '));
+    }
+
+    /**
+     * Récupérer un nom d'affichage robuste pour l'utilisateur.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        if ($fullName = $this->full_name) {
+            return $fullName;
+        }
+
+        if (filled($this->attributes['name'] ?? null)) {
+            return $this->attributes['name'];
+        }
+
+        return (string) ($this->email ?? '');
     }
 
     /**

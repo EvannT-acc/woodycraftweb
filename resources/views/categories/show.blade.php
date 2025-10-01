@@ -65,10 +65,17 @@
                     <div class="col-span-full text-center py-8">
                         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                             <p class="text-gray-500 mb-4">Aucun puzzle dans cette catégorie pour le moment.</p>
-                            <a href="{{ route('puzzles.create') }}" 
-                               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
-                                Ajouter un puzzle
-                            </a>
+                            @auth
+                                <a href="{{ route('puzzles.create') }}"
+                                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">
+                                    Ajouter un puzzle
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}"
+                                   class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900">
+                                    Se connecter pour contribuer
+                                </a>
+                            @endauth
                         </div>
                     </div>
                 @endif
