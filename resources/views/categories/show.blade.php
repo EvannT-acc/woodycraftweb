@@ -21,6 +21,12 @@
                 </div>
             @endif
 
+            <!-- Bouton retour -->
+            <a href="{{ route('dashboard') }}" 
+               class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+                ← Retour aux catégories
+            </a>
+
             <!-- Info catégorie -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-8 p-6">
                 <h1 class="text-3xl font-extrabold text-indigo-700 mb-3">{{ $categorie->nom }}</h1>
@@ -34,7 +40,8 @@
                 @foreach($categorie->puzzles as $puzzle)
                     <div class="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition p-5 flex flex-col justify-between">
                         <div>
-                            <img src="{{ asset('storage/'.$puzzle->image) }}" 
+                            <!-- Image puzzle depuis public/images/puzzles -->
+                            <img src="{{ asset('images/puzzles/' . $puzzle->image) }}" 
                                  alt="{{ $puzzle->nom }}" 
                                  class="w-full h-44 object-cover rounded-md mb-4">
                             

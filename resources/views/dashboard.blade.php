@@ -14,6 +14,12 @@
 
     <div class="py-10 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Bouton retour -->
+            <a href="{{ url('/') }}" 
+               class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+                ← Retour à l'accueil
+            </a>
             
             <!-- Message de succès -->
             @if (session()->has('message'))
@@ -36,7 +42,7 @@
                                 <!-- Image de la catégorie -->
                                 @if($categorie->image)
                                     <div class="w-full h-40 mx-auto overflow-hidden rounded-md border border-gray-200 mb-4">
-                                        <img src="{{ asset('images/' . $categorie->image) }}" 
+                                        <img src="{{ asset('images/categories/' . $categorie->image) }}" 
                                              alt="{{ $categorie->nom }}" 
                                              class="w-full h-full object-cover">
                                     </div>

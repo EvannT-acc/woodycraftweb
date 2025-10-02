@@ -43,7 +43,7 @@ class PanierController extends Controller
 
         // Vérifier si le puzzle est en rupture
         if ($puzzle->stock < 1) {
-            return redirect()->route('paniers.index')->with('error', 'Ce produit est en rupture de stock.');
+            return back()->with('error', 'Ce produit est en rupture de stock.');
         }
 
         // Vérifier si le puzzle est déjà dans le panier
@@ -54,7 +54,7 @@ class PanierController extends Controller
         if ($ligne) {
             // Vérifier le stock disponible
             if ($ligne->quantite >= $puzzle->stock) {
-                return redirect()->route('paniers.index')->with('error', 'Stock insuffisant pour ajouter plus de ce produit.');
+                return back()->with('error', 'Stock insuffisant pour ajouter plus de ce produit.');
             }
 
             // Incrémente la quantité
@@ -74,7 +74,7 @@ class PanierController extends Controller
         });
         $panier->save();
 
-        return redirect()->route('paniers.index')->with('success', 'Produit ajouté au panier !');
+        return back()->with('success', 'Produit ajouté au panier !');
     }
 
     /**
@@ -91,7 +91,7 @@ class PanierController extends Controller
 
         // Vérifier le stock disponible
         if ($request->quantite > $ligne->puzzle->stock) {
-            return redirect()->route('paniers.index')->with('error', 'Stock insuffisant pour cette quantité.');
+            return back()->with('error', 'Stock insuffisant pour cette quantité.');
         }
 
         // Mettre à jour la quantité
@@ -104,7 +104,7 @@ class PanierController extends Controller
         });
         $panier->save();
 
-        return redirect()->route('paniers.index')->with('success', 'Quantité mise à jour avec succès.');
+        return back()->with('success', 'Quantité mise à jour avec succès.');
     }
 
     /**
@@ -124,6 +124,6 @@ class PanierController extends Controller
         });
         $panier->save();
 
-        return redirect()->route('paniers.index')->with('success', 'Produit retiré du panier.');
+        return back()->with('success', 'Produit retiré du panier.');
     }
 }

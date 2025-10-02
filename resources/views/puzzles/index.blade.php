@@ -21,11 +21,20 @@
                 </div>
             @endif
 
+            <!-- Bouton retour -->
+            <a href="{{ route('dashboard') }}" 
+               class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+                ← Retour aux catégories
+            </a>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($puzzles as $puzzle)
                     <div class="bg-white shadow rounded-lg p-4 flex flex-col justify-between hover:shadow-md transition">
                         <div>
-                            <img src="{{ asset('storage/'.$puzzle->image) }}" alt="{{ $puzzle->nom }}" class="w-full h-40 object-cover rounded mb-3">
+                            <!-- Image puzzle depuis public/images/puzzles -->
+                            <img src="{{ asset('images/puzzles/' . $puzzle->image) }}" 
+                                 alt="{{ $puzzle->nom }}" 
+                                 class="w-full h-40 object-cover rounded mb-3">
                             
                             <h3 class="text-lg font-bold text-gray-900">{{ $puzzle->nom }}</h3>
                             <p class="text-sm text-gray-600">{{ Str::limit($puzzle->description, 80) }}</p>

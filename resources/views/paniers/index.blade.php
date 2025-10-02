@@ -7,7 +7,7 @@
 
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+
             <!-- Message de succès -->
             @if(session('success'))
                 <div class="mb-6 p-4 bg-green-100 text-green-800 rounded-lg shadow-md">
@@ -21,6 +21,12 @@
                     {{ session('error') }}
                 </div>
             @endif
+
+            <!-- Bouton retour -->
+            <a href="{{ route('dashboard') }}" 
+               class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+                ← Retour aux catégories
+            </a>
 
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <div class="p-6">
@@ -41,7 +47,10 @@
                                 @foreach($lignes as $ligne)
                                     <tr class="border-b hover:bg-gray-50">
                                         <td class="p-3 flex items-center space-x-3">
-                                            <img src="{{ asset('storage/'.$ligne->puzzle->image) }}" alt="{{ $ligne->puzzle->nom }}" class="w-12 h-12 object-cover rounded">
+                                            <!-- Image puzzle depuis public/images/puzzles -->
+                                            <img src="{{ asset('images/puzzles/' . $ligne->puzzle->image) }}" 
+                                                 alt="{{ $ligne->puzzle->nom }}" 
+                                                 class="w-12 h-12 object-cover rounded">
                                             <span>{{ $ligne->puzzle->nom }}</span>
                                         </td>
                                         <td class="p-3">{{ number_format($ligne->puzzle->prix, 2, ',', ' ') }} €</td>

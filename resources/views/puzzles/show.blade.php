@@ -5,7 +5,22 @@
         </h2>
     </x-slot>
 
+    <!-- Bouton retour -->
+    <a href="{{ route('categories.show', $puzzle->categorie->id) }}" 
+       class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+        ← Retour à la catégorie {{ $puzzle->categorie->nom }}
+    </a>
+
     <x-puzzles-card>
+        <!-- Image du puzzle -->
+        @if($puzzle->image)
+            <div class="w-full h-60 mb-4 rounded-md overflow-hidden">
+                <img src="{{ asset('images/puzzles/' . $puzzle->image) }}" 
+                     alt="{{ $puzzle->nom }}" 
+                     class="w-full h-full object-cover">
+            </div>
+        @endif
+
         <h3 class="font-semibold text-xl text-gray-800"> @lang('Nom') </h3>
         <p>{{ $puzzle->nom }}</p>
 
