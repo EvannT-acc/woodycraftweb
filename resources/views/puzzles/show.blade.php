@@ -13,13 +13,11 @@
 
     <x-puzzles-card>
         <!-- Image du puzzle -->
-        @if($puzzle->image)
-            <div class="w-full h-60 mb-4 rounded-md overflow-hidden">
-                <img src="{{ asset('images/puzzles/' . $puzzle->image) }}" 
-                     alt="{{ $puzzle->nom }}" 
-                     class="w-full h-full object-cover">
-            </div>
-        @endif
+        <div class="w-full h-60 mb-4 rounded-md overflow-hidden">
+            <img src="{{ $puzzle->image ? asset('images/puzzles/' . $puzzle->image) : asset('images/no_image.jpg') }}" 
+                 alt="{{ $puzzle->nom }}" 
+                 class="w-full h-full object-cover">
+        </div>
 
         <h3 class="font-semibold text-xl text-gray-800"> @lang('Nom') </h3>
         <p>{{ $puzzle->nom }}</p>
