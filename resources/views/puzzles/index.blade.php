@@ -26,7 +26,7 @@
                             @csrf
                             <button type="submit" 
                                     class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                                🛒 Ajouter
+                                 Ajouter
                             </button>
                         </form>
                     </div>

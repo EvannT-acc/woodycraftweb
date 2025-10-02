@@ -25,7 +25,7 @@
                 <div>
                     <a href="{{ route('paniers.index') }}" 
                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">
-                        🛒 Mon Panier
+                         Mon Panier
                     </a>
                 </div>
 
@@ -83,7 +83,7 @@
 
             <!-- Lien Panier responsive -->
             <x-responsive-nav-link :href="route('paniers.index')" :active="request()->routeIs('paniers.index')">
-                🛒 Mon Panier
+                 Mon Panier
             </x-responsive-nav-link>
         </div>
 

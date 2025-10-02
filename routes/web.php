@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/panier', [PanierController::class, 'index'])->name('paniers.index');
     Route::post('/panier/add/{puzzle}', [PanierController::class, 'add'])->name('paniers.add');
     Route::delete('/panier/remove/{ligne}', [PanierController::class, 'remove'])->name('paniers.remove');
+    Route::patch('/panier/update/{ligne}', [PanierController::class, 'update'])->name('paniers.update');
 });
 
 // CRUD puzzles

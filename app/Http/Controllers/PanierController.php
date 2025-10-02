@@ -59,11 +59,38 @@ class PanierController extends Controller
             ]);
         }
 
-        // Mettre à jour le total
-        $panier->total += $puzzle->prix;
+        // Recalculer le total global du panier
+        $panier->total = $panier->lignes()->with('puzzle')->get()->sum(function ($l) {
+            return $l->puzzle->prix * $l->quantite;
+        });
         $panier->save();
 
         return redirect()->route('paniers.index')->with('success', 'Produit ajouté au panier !');
+    }
+
+    /**
+     * Mettre à jour la quantité d’un produit du panier
+     */
+    public function update(Request $request, $ligne_id)
+    {
+        $request->validate([
+            'quantite' => 'required|integer|min:1'
+        ]);
+
+        $ligne = LignePanier::findOrFail($ligne_id);
+        $panier = $ligne->panier;
+
+        // Mettre à jour la quantité
+        $ligne->quantite = $request->quantite;
+        $ligne->save();
+
+        // Recalculer le total global du panier
+        $panier->total = $panier->lignes()->with('puzzle')->get()->sum(function ($l) {
+            return $l->puzzle->prix * $l->quantite;
+        });
+        $panier->save();
+
+        return redirect()->route('paniers.index')->with('success', 'Quantité mise à jour avec succès.');
     }
 
     /**
@@ -74,14 +101,14 @@ class PanierController extends Controller
         $ligne = LignePanier::findOrFail($ligne_id);
         $panier = $ligne->panier;
 
-        // Déduire le prix total
-        $panier->total -= ($ligne->puzzle->prix * $ligne->quantite);
-        if ($panier->total < 0) {
-            $panier->total = 0;
-        }
-        $panier->save();
-
+        // Supprimer la ligne
         $ligne->delete();
+
+        // Recalculer le total global du panier
+        $panier->total = $panier->lignes()->with('puzzle')->get()->sum(function ($l) {
+            return $l->puzzle->prix * $l->quantite;
+        });
+        $panier->save();
 
         return redirect()->route('paniers.index')->with('success', 'Produit retiré du panier.');
     }

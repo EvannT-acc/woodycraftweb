@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            🛒 {{ __('Mon Panier') }}
+             {{ __('Mon Panier') }}
         </h2>
     </x-slot>
 
@@ -38,7 +38,21 @@
                                             <span>{{ $ligne->puzzle->nom }}</span>
                                         </td>
                                         <td class="p-3">{{ number_format($ligne->puzzle->prix, 2, ',', ' ') }} €</td>
-                                        <td class="p-3">{{ $ligne->quantite }}</td>
+
+                                        <!-- Formulaire modification quantité -->
+                                        <td class="p-3">
+                                            <form action="{{ route('paniers.update', $ligne->id) }}" method="POST" class="flex items-center space-x-2">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="number" name="quantite" value="{{ $ligne->quantite }}" 
+                                                       min="1" class="w-16 border rounded p-1 text-center">
+                                                <button type="submit" 
+                                                        class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">
+                                                    Mettre à jour
+                                                </button>
+                                            </form>
+                                        </td>
+
                                         <td class="p-3">{{ number_format($ligne->puzzle->prix * $ligne->quantite, 2, ',', ' ') }} €</td>
                                         <td class="p-3 text-right">
                                             <form action="{{ route('paniers.remove', $ligne->id) }}" method="POST" onsubmit="return confirm('Supprimer ce produit ?');">

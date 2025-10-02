@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('lignepaniers', function (Blueprint $table) {
+        Schema::create('ligne_paniers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('puzzle_id')->constrained('puzzles')->cascadeOnDelete();
             $table->foreignId('panier_id')->constrained('paniers')->cascadeOnDelete();
@@ -15,6 +15,6 @@ return new class extends Migration {
         });
     }
     public function down(): void {
-        Schema::dropIfExists('lignepaniers');
+        Schema::dropIfExists('ligne_paniers');
     }
 };
