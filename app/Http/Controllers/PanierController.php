@@ -41,17 +41,26 @@ class PanierController extends Controller
 
         $puzzle = Puzzle::findOrFail($puzzle_id);
 
+        // Vérifier si le puzzle est en rupture
+        if ($puzzle->stock < 1) {
+            return redirect()->route('paniers.index')->with('error', 'Ce produit est en rupture de stock.');
+        }
+
         // Vérifier si le puzzle est déjà dans le panier
         $ligne = LignePanier::where('panier_id', $panier->id)
             ->where('puzzle_id', $puzzle->id)
             ->first();
 
         if ($ligne) {
+            // Vérifier le stock disponible
+            if ($ligne->quantite >= $puzzle->stock) {
+                return redirect()->route('paniers.index')->with('error', 'Stock insuffisant pour ajouter plus de ce produit.');
+            }
+
             // Incrémente la quantité
             $ligne->quantite += 1;
             $ligne->save();
         } else {
-            // Crée une nouvelle ligne
             LignePanier::create([
                 'panier_id' => $panier->id,
                 'puzzle_id' => $puzzle->id,
@@ -79,6 +88,11 @@ class PanierController extends Controller
 
         $ligne = LignePanier::findOrFail($ligne_id);
         $panier = $ligne->panier;
+
+        // Vérifier le stock disponible
+        if ($request->quantite > $ligne->puzzle->stock) {
+            return redirect()->route('paniers.index')->with('error', 'Stock insuffisant pour cette quantité.');
+        }
 
         // Mettre à jour la quantité
         $ligne->quantite = $request->quantite;

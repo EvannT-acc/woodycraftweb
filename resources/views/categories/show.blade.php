@@ -8,6 +8,19 @@
     <div class="py-10 bg-gray-100 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
+            <!-- Messages -->
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-100 text-green-800 rounded-lg shadow-md">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-100 text-red-800 rounded-lg shadow-md">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <!-- Info catégorie -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-8 p-6">
                 <h1 class="text-3xl font-extrabold text-indigo-700 mb-3">{{ $categorie->nom }}</h1>
@@ -28,6 +41,17 @@
                             <h3 class="text-xl font-semibold text-gray-900">{{ $puzzle->nom }}</h3>
                             <p class="text-sm text-gray-600 mt-1">{{ Str::limit($puzzle->description, 90) }}</p>
                             
+                            <!-- Badge stock -->
+                            @if($puzzle->stock > 0)
+                                <span class="inline-block mt-2 px-2 py-1 text-xs font-bold text-green-700 bg-green-100 rounded">
+                                    En stock ({{ $puzzle->stock }})
+                                </span>
+                            @else
+                                <span class="inline-block mt-2 px-2 py-1 text-xs font-bold text-red-700 bg-red-100 rounded">
+                                    Rupture
+                                </span>
+                            @endif
+
                             <!-- Prix en bleu -->
                             <p class="mt-3 text-lg font-bold text-indigo-600">
                                 {{ number_format($puzzle->prix, 2, ',', ' ') }} €
@@ -46,7 +70,10 @@
                             <form action="{{ route('paniers.add', $puzzle->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" 
-                                        class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 shadow">
+                                        class="px-4 py-2 text-sm rounded-lg shadow transition
+                                               @if($puzzle->stock > 0) bg-indigo-600 text-white hover:bg-indigo-700 
+                                               @else bg-gray-300 text-gray-500 cursor-not-allowed @endif"
+                                        @if($puzzle->stock == 0) disabled @endif>
                                      Ajouter
                                 </button>
                             </form>

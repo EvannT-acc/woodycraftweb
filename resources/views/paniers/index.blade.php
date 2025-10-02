@@ -15,6 +15,13 @@
                 </div>
             @endif
 
+            <!-- Message d'erreur -->
+            @if(session('error'))
+                <div class="mb-6 p-4 bg-red-100 text-red-800 rounded-lg shadow-md">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <div class="p-6">
                     @if($lignes->isEmpty())
@@ -45,12 +52,14 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="number" name="quantite" value="{{ $ligne->quantite }}" 
-                                                       min="1" class="w-16 border rounded p-1 text-center">
+                                                       min="1" max="{{ $ligne->puzzle->stock }}" 
+                                                       class="w-16 border rounded p-1 text-center">
                                                 <button type="submit" 
                                                         class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">
                                                     Mettre à jour
                                                 </button>
                                             </form>
+                                            <small class="text-gray-500">Stock dispo : {{ $ligne->puzzle->stock }}</small>
                                         </td>
 
                                         <td class="p-3">{{ number_format($ligne->puzzle->prix * $ligne->quantite, 2, ',', ' ') }} €</td>

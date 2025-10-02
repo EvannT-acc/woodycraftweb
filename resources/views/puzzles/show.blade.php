@@ -15,8 +15,22 @@
         <h3 class="font-semibold text-xl text-gray-800 pt-2"> @lang('Description') </h3>
         <p>{{ $puzzle->description }}</p>
 
+        <!-- Badge stock -->
+        <h3 class="font-semibold text-xl text-gray-800 pt-2"> @lang('Disponibilité') </h3>
+        @if($puzzle->stock > 0)
+            <span class="inline-block mt-1 px-2 py-1 text-xs font-bold text-green-700 bg-green-100 rounded">
+                En stock ({{ $puzzle->stock }})
+            </span>
+        @else
+            <span class="inline-block mt-1 px-2 py-1 text-xs font-bold text-red-700 bg-red-100 rounded">
+                Rupture
+            </span>
+        @endif
+
         <h3 class="font-semibold text-xl text-gray-800 pt-2"> @lang('Prix') </h3>
-        <p>{{ number_format($puzzle->prix, 2, ',', ' ') }} €</p>
+        <p class="text-indigo-600 font-bold text-lg">
+            {{ number_format($puzzle->prix, 2, ',', ' ') }} €
+        </p>
 
         <h3 class="font-semibold text-xl text-gray-800 pt-2"> @lang('Date création') </h3>
         <p>{{ $puzzle->created_at->format('d/m/Y') }}</p>
@@ -31,7 +45,10 @@
             <form action="{{ route('paniers.add', $puzzle->id) }}" method="POST">
                 @csrf
                 <button type="submit" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition">
+                        class="px-4 py-2 text-white rounded-lg shadow transition
+                               @if($puzzle->stock > 0) bg-indigo-600 hover:bg-indigo-700 
+                               @else bg-gray-300 text-gray-500 cursor-not-allowed @endif"
+                        @if($puzzle->stock == 0) disabled @endif>
                      Ajouter au panier
                 </button>
             </form>
