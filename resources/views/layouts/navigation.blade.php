@@ -18,8 +18,18 @@
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- Right Side (Panier + Settings) -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6 space-x-6">
+                
+                <!-- Lien Panier -->
+                <div>
+                    <a href="{{ route('paniers.index') }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">
+                        🛒 Mon Panier
+                    </a>
+                </div>
+
+                <!-- Settings Dropdown -->
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -69,6 +79,11 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            <!-- Lien Panier responsive -->
+            <x-responsive-nav-link :href="route('paniers.index')" :active="request()->routeIs('paniers.index')">
+                🛒 Mon Panier
             </x-responsive-nav-link>
         </div>
 
