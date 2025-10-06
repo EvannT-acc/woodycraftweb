@@ -13,9 +13,7 @@ use App\Http\Controllers\CheckoutController;
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| Routes principales de ton site WoodyCraftWeb
 |
 */
 
@@ -48,13 +46,34 @@ Route::middleware('auth')->group(function () {
     Route::delete('/panier/remove/{ligne}', [PanierController::class, 'remove'])->name('paniers.remove');
     Route::patch('/panier/update/{ligne}', [PanierController::class, 'update'])->name('paniers.update');
 
-    // Routes checkout
+    // Routes Checkout (paiement)
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/valider', [CheckoutController::class, 'valider'])->name('checkout.valider');
-
 });
 
+// ---------------------------
+// Routes PayPal
+// ---------------------------
+
+// ✅ Succès du paiement PayPal
+Route::get('/paypal/success', function () {
+    return redirect()->route('dashboard')->with('success', 'Paiement PayPal réussi ! Merci pour votre commande.');
+})->name('paypal.success');
+
+// ❌ Annulation du paiement PayPal
+Route::get('/paypal/cancel', function () {
+    return redirect()->route('paniers.index')->with('error', 'Paiement PayPal annulé.');
+})->name('paypal.cancel');
+
+// (Optionnel) Notification IPN PayPal
+Route::post('/paypal/ipn', function () {
+    return response('OK', 200);
+})->name('paypal.ipn');
+
+// ---------------------------
 // CRUD puzzles
+// ---------------------------
 Route::resource('puzzles', PuzzleController::class)->middleware('auth');
 
+// Authentification Laravel Breeze
 require __DIR__.'/auth.php';

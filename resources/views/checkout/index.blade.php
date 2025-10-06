@@ -1,5 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
+        <!-- Bouton retour -->
+        <a href="{{ route('paniers.index') }}" class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+            ← Retour au panier
+<       </a>
+
         <h2 class="font-bold text-xl text-gray-800 leading-tight">Finaliser ma commande</h2>
     </x-slot>
 
