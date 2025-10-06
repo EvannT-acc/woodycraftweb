@@ -6,6 +6,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PuzzleController;
 use App\Http\Controllers\PanierController;
 use App\Models\Categorie;
+use App\Http\Controllers\CheckoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/panier/add/{puzzle}', [PanierController::class, 'add'])->name('paniers.add');
     Route::delete('/panier/remove/{ligne}', [PanierController::class, 'remove'])->name('paniers.remove');
     Route::patch('/panier/update/{ligne}', [PanierController::class, 'update'])->name('paniers.update');
+
+    // Routes checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout/valider', [CheckoutController::class, 'valider'])->name('checkout.valider');
+
 });
 
 // CRUD puzzles

@@ -92,6 +92,21 @@
                                 Total : {{ number_format($panier->total, 2, ',', ' ') }} €
                             </h3>
                         </div>
+
+                        <!-- 🔹 Bouton passer commande -->
+                        <div class="mt-8 text-right">
+                            @auth
+                                <a href="{{ route('checkout.index') }}" 
+                                   class="inline-block bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow hover:bg-indigo-700 transition">
+                                    Passer commande
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}" 
+                                   class="inline-block bg-yellow-500 text-white font-medium px-5 py-2 rounded-lg shadow hover:bg-yellow-600 transition">
+                                    Se connecter pour commander
+                                </a>
+                            @endauth
+                        </div>
                     @endif
                 </div>
             </div>
