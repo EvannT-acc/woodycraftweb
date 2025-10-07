@@ -24,7 +24,7 @@ class CheckoutController extends Controller
                         ->first();
 
         if (!$panier) {
-            // ✅ Crée un nouveau panier vide si aucun n'existe
+            // Crée un nouveau panier vide si aucun n'existe
             $panier = Panier::create([
                 'user_id' => $user->id,
                 'status'  => 0,

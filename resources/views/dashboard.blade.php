@@ -28,20 +28,19 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     @foreach($categories as $categorie)
-                        <div class="bg-gray-800 rounded-2xl shadow-soft overflow-hidden hover:scale-[1.02] hover:shadow-xl transition-all duration-300 group relative min-h-[340px] flex flex-col">
+                        <div class="bg-gray-800 rounded-2xl shadow-soft overflow-hidden hover:shadow-xl transition-all duration-200 relative min-h-[340px] flex flex-col">
                             
-                            <!-- Image -->
+                            <!-- Image sans animation -->
                             <div class="relative w-full h-48 overflow-hidden">
                                 @if($categorie->image)
                                     <img src="{{ asset('images/categories/' . $categorie->image) }}" 
                                          alt="{{ $categorie->nom }}" 
-                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                         class="w-full h-full object-cover">
                                 @else
                                     <div class="w-full h-full bg-gray-700 flex items-center justify-center">
                                         <span class="text-gray-400 font-medium">Aucune image</span>
                                     </div>
                                 @endif
-                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             </div>
 
                             <div class="p-5 flex flex-col flex-1">
@@ -59,7 +58,7 @@
                                 <div class="mt-4">
                                     <a href="{{ route('categories.show', $categorie->id) }}" 
                                        class="block text-center px-4 py-3 rounded-lg font-semibold text-base transition duration-200
-                                              bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                              bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg">
                                         Voir les puzzles
                                     </a>
                                 </div>
