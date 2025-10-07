@@ -2,15 +2,11 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PuzzleController;
 use App\Http\Controllers\PanierController;
 use App\Http\Controllers\CheckoutController;
 use App\Models\Categorie;
-use App\Models\Panier;
-use App\Models\LignePanier;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,47 +59,16 @@ Route::middleware('auth')->group(function () {
     // Checkout (paiement)
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/valider', [CheckoutController::class, 'valider'])->name('checkout.valider');
+
+    // Paiement PayPal (retours utilisateur)
+    Route::get('/paypal/success', [CheckoutController::class, 'paypalSuccess'])
+        ->name('paypal.success'); // conserve la session utilisateur
+    Route::get('/paypal/cancel', [CheckoutController::class, 'paypalCancel'])
+        ->name('paypal.cancel');
 });
 
-// ---------------------------
-// Routes PayPal
-// ---------------------------
-
-//  Succès du paiement PayPal → suppression du panier
-Route::get('/paypal/success', function () {
-    $user = Auth::user();
-
-    if ($user) {
-        // Trouve le dernier panier validé pour cet utilisateur
-        $panier = Panier::where('user_id', $user->id)
-            ->where('status', 1)
-            ->latest('updated_at')
-            ->first();
-
-        if ($panier) {
-            DB::transaction(function () use ($panier) {
-                LignePanier::where('panier_id', $panier->id)->delete();
-                $panier->delete();
-            });
-        }
-    }
-
-    return redirect()
-        ->route('dashboard')
-        ->with('success', 'Paiement PayPal réussi ! Merci pour votre commande.');
-})->middleware('auth')->name('paypal.success');
-
-//  Annulation du paiement PayPal
-Route::get('/paypal/cancel', function () {
-    return redirect()
-        ->route('paniers.index')
-        ->with('error', 'Paiement PayPal annulé.');
-})->name('paypal.cancel');
-
-//  Notification IPN PayPal (facultatif)
-Route::post('/paypal/ipn', function () {
-    return response('OK', 200);
-})->name('paypal.ipn');
+// Notification IPN PayPal (système) — pas d’auth ici
+Route::post('/paypal/ipn', [CheckoutController::class, 'paypalIpn'])->name('paypal.ipn');
 
 // ---------------------------
 // CRUD puzzles

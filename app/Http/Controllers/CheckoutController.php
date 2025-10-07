@@ -18,11 +18,25 @@ class CheckoutController extends Controller
     {
         $user = Auth::user();
 
-        // Récupérer le panier courant
-        $panier = Panier::where('user_id', $user->id)->first();
+        // Récupérer le panier courant (status 0 = en cours)
+        $panier = Panier::where('user_id', $user->id)
+                        ->where('status', 0)
+                        ->first();
 
-        // Recalcule/actualise le total pour que le récap soit tjrs juste
-        $lignes = LignePanier::with('puzzle')->where('panier_id', $panier->id)->get();
+        if (!$panier) {
+            // ✅ Crée un nouveau panier vide si aucun n'existe
+            $panier = Panier::create([
+                'user_id' => $user->id,
+                'status'  => 0,
+                'total'   => 0,
+            ]);
+        }
+
+        // Récupère les lignes et calcule le total
+        $lignes = LignePanier::with('puzzle')
+                    ->where('panier_id', $panier->id)
+                    ->get();
+
         $total = $lignes->sum(fn($l) => $l->puzzle->prix * $l->quantite);
         $panier->update(['total' => $total]);
 
@@ -46,15 +60,22 @@ class CheckoutController extends Controller
             'mode_paiement' => 'required|in:cheque,paypal',
         ]);
 
-        $user   = Auth::user();
-        $panier = Panier::where('user_id', $user->id)->first();
+        $user = Auth::user();
+        $panier = Panier::where('user_id', $user->id)
+                        ->where('status', 0)
+                        ->first();
+
+        if (!$panier) {
+            return back()->with('error', 'Aucun panier actif trouvé.');
+        }
+
         $lignes = LignePanier::with('puzzle')->where('panier_id', $panier->id)->get();
 
         if ($lignes->isEmpty()) {
             return back()->with('error', 'Votre panier est vide.');
         }
 
-        // Sauvegarde / MAJ adresse
+        // Sauvegarde ou mise à jour de l'adresse
         DB::table('adresses')->updateOrInsert(
             ['user_id' => $user->id],
             [
@@ -67,24 +88,29 @@ class CheckoutController extends Controller
             ]
         );
 
-        // Calcul du total au moment T (garanti à jour)
+        // Calcul du total
         $total = $lignes->sum(fn($l) => $l->puzzle->prix * $l->quantite);
 
-        // Marquer la "commande" (panier actuel) comme validée
+        // ✅ Marquer le panier comme validé
         $panier->update([
             'status'        => 1,
             'mode_paiement' => $request->mode_paiement,
             'total'         => $total,
         ]);
 
-        $panier->refresh();
+        // ✅ Créer un nouveau panier vide pour la prochaine commande
+        Panier::create([
+            'user_id' => $user->id,
+            'status'  => 0,
+            'total'   => 0,
+        ]);
 
         if ($request->mode_paiement === 'cheque') {
-            // Générer + envoyer le PDF ET supprimer le panier en BDD avant de renvoyer le flux
+            // Paiement par chèque → PDF + suppression panier
             return $this->facturePDFEtSupprimerPanier($user, $panier, $lignes);
         }
 
-        // PayPal : on redirige vers PayPal, et on supprimera le panier au retour (/paypal/success)
+        // Paiement PayPal → redirection
         return $this->redirigerVersPaypal($panier, $total);
     }
 
@@ -105,35 +131,78 @@ class CheckoutController extends Controller
         $filename = 'facture_panier_' . $panier->id . '.pdf';
         $content  = $pdf->output();
 
-        // 🔒 On supprime le panier et ses lignes AVANT de renvoyer le flux (pour éviter les paniers fantômes)
+        // ✅ Supprimer le panier et ses lignes
         DB::transaction(function () use ($panier) {
             LignePanier::where('panier_id', $panier->id)->delete();
             $panier->delete();
         });
 
-        // 🔁 On renvoie le téléchargement direct (pas de redirect ici)
         return response()->streamDownload(function () use ($content) {
             echo $content;
         }, $filename);
     }
 
     /**
-     * Redirection vers PayPal Sandbox avec les paramètres nécessaires
+     * Redirection vers PayPal Sandbox
      */
     private function redirigerVersPaypal($panier, $total)
     {
-        $paypalBusiness = 'sb-xxxxxxxxxxxx@business.example.com'; // ← mets ton email sandbox business
+        $paypalBusiness = 'sb-xxxxxxxxxxxx@business.example.com'; // ton email sandbox
         $paypalUrl = 'https://www.sandbox.paypal.com/cgi-bin/webscr?' . http_build_query([
             'cmd'           => '_xclick',
             'business'      => $paypalBusiness,
             'item_name'     => 'Commande WoodyCraft #' . $panier->id,
             'amount'        => number_format($total, 2, '.', ''),
             'currency_code' => 'EUR',
-            'return'        => route('paypal.success'), // on supprimera le panier ici
+            'return'        => route('paypal.success', ['id' => $panier->id]),
             'cancel_return' => route('paypal.cancel'),
             'notify_url'    => route('paypal.ipn'),
         ]);
 
         return redirect()->away($paypalUrl);
+    }
+
+    /**
+     * ✅ Callback PayPal : paiement réussi
+     */
+    public function paypalSuccess(Request $request)
+    {
+        $user = Auth::user();
+        $panierId = $request->query('id');
+
+        if (!$panierId) {
+            return redirect()->route('dashboard')->with('error', 'Identifiant de commande manquant.');
+        }
+
+        $panier = Panier::find($panierId);
+
+        if (!$panier || $panier->status != 1) {
+            return redirect()->route('dashboard')->with('error', 'Commande introuvable ou déjà traitée.');
+        }
+
+        // ✅ Supprimer le panier et ses lignes
+        DB::transaction(function () use ($panier) {
+            LignePanier::where('panier_id', $panier->id)->delete();
+            $panier->delete();
+        });
+
+        return redirect()->route('dashboard')->with('message', 'Paiement PayPal confirmé 🎉');
+    }
+
+    /**
+     * ✅ Callback PayPal : annulation du paiement
+     */
+    public function paypalCancel()
+    {
+        return redirect()->route('dashboard')->with('error', 'Paiement annulé par l’utilisateur.');
+    }
+
+    /**
+     * (Optionnel) Gestion des notifications IPN PayPal (non obligatoire ici)
+     */
+    public function paypalIpn(Request $request)
+    {
+        // Ici, tu peux traiter les notifications automatiques de PayPal si besoin
+        return response('OK', 200);
     }
 }
