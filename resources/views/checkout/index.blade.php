@@ -1,51 +1,66 @@
 <x-app-layout>
     <x-slot name="header">
-        <!-- Bouton retour -->
-        <a href="{{ route('paniers.index') }}" class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
+        <a href="{{ route('paniers.index') }}" 
+           class="inline-block mb-6 text-accent hover:text-blue-400 text-sm transition">
             ← Retour au panier
-<       </a>
+        </a>
 
-        <h2 class="font-bold text-xl text-gray-800 leading-tight">Finaliser ma commande</h2>
+        <h2 class="font-bold text-3xl text-gray-100 leading-tight">Finaliser ma commande</h2>
     </x-slot>
 
-    <div class="py-10 bg-gray-50 min-h-screen">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 grid md:grid-cols-2 gap-8">
+    <div class="py-10 bg-gray-900 min-h-screen">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 grid md:grid-cols-2 gap-10">
 
             <!-- Adresse -->
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="font-semibold mb-4">Adresse de livraison</h3>
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-soft border border-gray-700">
+                <h3 class="font-semibold text-xl text-accent mb-4">Adresse de livraison</h3>
+
                 <form action="{{ route('checkout.valider') }}" method="POST">
                     @csrf
-                    <div class="space-y-3">
-                        <input type="text" name="numero" value="{{ old('numero', $adresse->numero ?? '') }}" placeholder="Numéro" class="w-full border p-2 rounded">
-                        <input type="text" name="rue" value="{{ old('rue', $adresse->rue ?? '') }}" placeholder="Rue" class="w-full border p-2 rounded">
-                        <input type="text" name="ville" value="{{ old('ville', $adresse->ville ?? '') }}" placeholder="Ville" class="w-full border p-2 rounded">
-                        <input type="text" name="code_postal" value="{{ old('code_postal', $adresse->code_postal ?? '') }}" placeholder="Code postal" class="w-full border p-2 rounded">
-                        <input type="text" name="pays" value="{{ old('pays', $adresse->pays ?? '') }}" placeholder="Pays" class="w-full border p-2 rounded">
+                    <div class="space-y-4">
+                        <input type="text" name="numero" value="{{ old('numero', $adresse->numero ?? '') }}" placeholder="Numéro" class="w-full bg-gray-900 border border-gray-700 text-gray-200 rounded p-3 focus:ring-accent focus:border-accent">
+                        <input type="text" name="rue" value="{{ old('rue', $adresse->rue ?? '') }}" placeholder="Rue" class="w-full bg-gray-900 border border-gray-700 text-gray-200 rounded p-3 focus:ring-accent focus:border-accent">
+                        <input type="text" name="ville" value="{{ old('ville', $adresse->ville ?? '') }}" placeholder="Ville" class="w-full bg-gray-900 border border-gray-700 text-gray-200 rounded p-3 focus:ring-accent focus:border-accent">
+                        <input type="text" name="code_postal" value="{{ old('code_postal', $adresse->code_postal ?? '') }}" placeholder="Code postal" class="w-full bg-gray-900 border border-gray-700 text-gray-200 rounded p-3 focus:ring-accent focus:border-accent">
+                        <input type="text" name="pays" value="{{ old('pays', $adresse->pays ?? '') }}" placeholder="Pays" class="w-full bg-gray-900 border border-gray-700 text-gray-200 rounded p-3 focus:ring-accent focus:border-accent">
                     </div>
 
-                    <h3 class="font-semibold mt-6 mb-2">Mode de paiement</h3>
-                    <label class="block"><input type="radio" name="mode_paiement" value="cheque" checked> Par chèque</label>
-                    <label class="block"><input type="radio" name="mode_paiement" value="paypal"> PayPal</label>
+                    <h3 class="font-semibold text-xl text-accent mt-6 mb-3">Mode de paiement</h3>
+                    <div class="space-y-2 text-gray-300">
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="mode_paiement" value="cheque" checked class="accent-accent">
+                            <span>Par chèque</span>
+                        </label>
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="mode_paiement" value="paypal" class="accent-accent">
+                            <span>PayPal</span>
+                        </label>
+                    </div>
 
-                    <button class="mt-6 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Valider ma commande</button>
+                    <button class="mt-8 bg-accent text-gray-900 font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-400 transition w-full">
+                        Valider ma commande
+                    </button>
                 </form>
             </div>
 
-            <!-- Récap -->
-            <div class="bg-white p-6 rounded shadow">
-                <h3 class="font-semibold mb-4">Récapitulatif</h3>
-                @foreach($lignes as $ligne)
-                    <div class="flex justify-between border-b py-2">
-                        <span>{{ $ligne->puzzle->nom }} x {{ $ligne->quantite }}</span>
-                        <span>{{ number_format($ligne->puzzle->prix * $ligne->quantite, 2, ',', ' ') }} €</span>
-                    </div>
-                @endforeach
-                <div class="text-right mt-4 font-bold">
-                    Total : {{ number_format($panier->total, 2, ',', ' ') }} €
+            <!-- Récapitulatif -->
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-soft border border-gray-700">
+                <h3 class="font-semibold text-xl text-accent mb-4">Récapitulatif</h3>
+                <div class="divide-y divide-gray-700">
+                    @foreach($lignes as $ligne)
+                        <div class="flex justify-between py-3">
+                            <span class="text-gray-300">{{ $ligne->puzzle->nom }} x {{ $ligne->quantite }}</span>
+                            <span class="text-gray-100">{{ number_format($ligne->puzzle->prix * $ligne->quantite, 2, ',', ' ') }} €</span>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="text-right mt-6">
+                    <h3 class="text-2xl font-bold text-accent">
+                        Total : {{ number_format($panier->total, 2, ',', ' ') }} €
+                    </h3>
                 </div>
             </div>
-
         </div>
     </div>
 </x-app-layout>

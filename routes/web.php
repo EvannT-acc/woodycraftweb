@@ -2,29 +2,26 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PageController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PuzzleController;
 use App\Http\Controllers\PanierController;
 use App\Http\Controllers\CheckoutController;
 use App\Models\Categorie;
+use App\Models\Panier;
+use App\Models\LignePanier;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
 | Routes principales du site WoodyCraftWeb
-|
+|--------------------------------------------------------------------------
 */
 
-// ---------------------------
-// Pages publiques
-// ---------------------------
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/about', [PageController::class, 'about'])->name('about');
 
 // ---------------------------
 // Tableau de bord (protégé)
@@ -35,7 +32,15 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // ---------------------------
-// Routes protégées (auth)
+// Catégories accessibles à tous
+// ---------------------------
+Route::get('/categories/{categorie}', function (Categorie $categorie) {
+    $categorie->load('puzzles');
+    return view('categories.show', compact('categorie'));
+})->name('categories.show');
+
+// ---------------------------
+// Routes protégées (auth requise)
 // ---------------------------
 Route::middleware('auth')->group(function () {
 
@@ -44,38 +49,56 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Catégorie et puzzles associés
-    Route::get('/categories/{categorie}', function (Categorie $categorie) {
-        $categorie->load('puzzles');
-        return view('categories.show', compact('categorie'));
-    })->name('categories.show');
-
     // Panier
     Route::get('/panier', [PanierController::class, 'index'])->name('paniers.index');
     Route::post('/panier/add/{puzzle}', [PanierController::class, 'add'])->name('paniers.add');
     Route::delete('/panier/remove/{ligne}', [PanierController::class, 'remove'])->name('paniers.remove');
     Route::patch('/panier/update/{ligne}', [PanierController::class, 'update'])->name('paniers.update');
 
-    // Checkout (paiement)
+    // Checkout
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/valider', [CheckoutController::class, 'valider'])->name('checkout.valider');
-
-    // Paiement PayPal (retours utilisateur)
-    Route::get('/paypal/success', [CheckoutController::class, 'paypalSuccess'])
-        ->name('paypal.success'); // conserve la session utilisateur
-    Route::get('/paypal/cancel', [CheckoutController::class, 'paypalCancel'])
-        ->name('paypal.cancel');
 });
 
-// Notification IPN PayPal (système) — pas d’auth ici
-Route::post('/paypal/ipn', [CheckoutController::class, 'paypalIpn'])->name('paypal.ipn');
+// ---------------------------
+// Routes PayPal
+// ---------------------------
+Route::get('/paypal/success', function () {
+    $user = Auth::user();
+
+    if ($user) {
+        $panier = Panier::where('user_id', $user->id)
+            ->where('status', 1)
+            ->latest('updated_at')
+            ->first();
+
+        if ($panier) {
+            DB::transaction(function () use ($panier) {
+                LignePanier::where('panier_id', $panier->id)->delete();
+                $panier->delete();
+            });
+        }
+    }
+
+    return redirect()->route('dashboard')
+        ->with('success', 'Paiement PayPal réussi ! Merci pour votre commande.');
+})->middleware('auth')->name('paypal.success');
+
+Route::get('/paypal/cancel', function () {
+    return redirect()->route('paniers.index')
+        ->with('error', 'Paiement PayPal annulé.');
+})->name('paypal.cancel');
+
+Route::post('/paypal/ipn', function () {
+    return response('OK', 200);
+})->name('paypal.ipn');
 
 // ---------------------------
-// CRUD puzzles
+// CRUD puzzles (protégé)
 // ---------------------------
 Route::resource('puzzles', PuzzleController::class)->middleware('auth');
 
 // ---------------------------
-// Authentification (Laravel Breeze)
+// Authentification Breeze
 // ---------------------------
 require __DIR__.'/auth.php';

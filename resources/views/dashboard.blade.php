@@ -1,89 +1,78 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-2xl text-gray-900 leading-tight">
-            {{ __('Tableau de bord') }}
-        </h2>
-        <p class="text-gray-600 mt-1">
-            Bienvenue, <span class="font-semibold">{{ Auth::user()->prenom }} {{ Auth::user()->nom }}</span>
-            <span class="ml-2 px-2 py-1 text-xs rounded-full 
-                {{ Auth::user()->role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
-                {{ ucfirst(Auth::user()->role) }}
-            </span>
-        </p>
+        <div class="text-gray-100">
+            <h2 class="font-bold text-3xl leading-tight">{{ __('Tableau de bord') }}</h2>
+            <p class="text-gray-400 mt-1">
+                Bienvenue, <span class="font-semibold text-accent">{{ Auth::user()->prenom }} {{ Auth::user()->nom }}</span>
+                <span class="ml-2 px-2 py-1 text-xs rounded-full 
+                    {{ Auth::user()->role === 'admin' ? 'bg-red-600/30 text-red-400' : 'bg-green-600/30 text-green-400' }}">
+                    {{ ucfirst(Auth::user()->role) }}
+                </span>
+            </p>
+        </div>
     </x-slot>
 
-    <div class="py-10 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <div class="py-10 bg-gray-900 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <!-- Bouton retour -->
-            <a href="{{ url('/') }}" 
-               class="inline-block mb-6 text-blue-600 hover:text-blue-800 text-sm">
-                ← Retour à l'accueil
-            </a>
-            
-            <!-- Message de succès -->
             @if (session()->has('message'))
-                <div class="mb-6 p-4 bg-green-100 text-green-800 rounded-lg shadow-md">
+                <div class="mb-6 p-4 bg-green-700/30 text-green-300 rounded-lg shadow-soft">
                     {{ session('message') }}
                 </div>
             @endif
 
-            <!-- Liste des catégories -->
             <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-900 mb-8 border-b-4 border-indigo-500 inline-block pb-2">
+                <h3 class="text-2xl font-bold text-gray-100 mb-8 border-b-4 border-accent inline-block pb-2">
                     Liste des Catégories
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     @foreach($categories as $categorie)
-                        <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1">
-                            <div class="p-6 flex flex-col h-full">
-                                
-                                <!-- Image de la catégorie -->
+                        <div class="bg-gray-800 rounded-2xl shadow-soft overflow-hidden hover:scale-[1.02] hover:shadow-xl transition-all duration-300 group relative min-h-[340px] flex flex-col">
+                            
+                            <!-- Image -->
+                            <div class="relative w-full h-48 overflow-hidden">
                                 @if($categorie->image)
-                                    <div class="w-full h-40 mx-auto overflow-hidden rounded-md border border-gray-200 mb-4">
-                                        <img src="{{ asset('images/categories/' . $categorie->image) }}" 
-                                             alt="{{ $categorie->nom }}" 
-                                             class="w-full h-full object-cover">
-                                    </div>
+                                    <img src="{{ asset('images/categories/' . $categorie->image) }}" 
+                                         alt="{{ $categorie->nom }}" 
+                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 @else
-                                    <div class="w-full h-40 bg-gray-200 mb-4 rounded-md flex items-center justify-center">
-                                        <span class="text-gray-600 font-medium">Aucune image</span>
+                                    <div class="w-full h-full bg-gray-700 flex items-center justify-center">
+                                        <span class="text-gray-400 font-medium">Aucune image</span>
                                     </div>
                                 @endif
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            </div>
 
-                                <!-- Nom de la catégorie -->
-                                <h4 class="text-lg font-bold text-gray-800 mb-2 truncate" title="{{ $categorie->nom }}">
-                                    {{ $categorie->nom }}
-                                </h4>
+                            <div class="p-5 flex flex-col flex-1">
+                                <h4 class="text-xl font-semibold text-white mb-2 truncate">{{ $categorie->nom }}</h4>
 
-                                <!-- Description -->
                                 @if($categorie->description)
-                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                                        {{ $categorie->description }}
-                                    </p>
+                                    <p class="text-gray-400 text-sm mb-4 line-clamp-2">{{ $categorie->description }}</p>
                                 @endif
 
-                                <!-- Nombre de puzzles -->
-                                <div class="flex justify-between items-center mb-6 text-gray-500 text-sm">
+                                <div class="flex justify-between items-center text-gray-500 text-sm mb-4">
                                     <span>{{ $categorie->puzzles->count() }} puzzle(s)</span>
                                 </div>
 
-                                <!-- Bouton voir -->
-                                <a href="{{ route('categories.show', $categorie->id) }}" 
-                                   class="mt-auto inline-block w-full text-center px-4 py-3 bg-black text-white rounded-lg font-semibold text-base transition">
-                                    Voir les puzzles
-                                </a>
+                                <!-- Bouton -->
+                                <div class="mt-4">
+                                    <a href="{{ route('categories.show', $categorie->id) }}" 
+                                       class="block text-center px-4 py-3 rounded-lg font-semibold text-base transition duration-200
+                                              bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                                        Voir les puzzles
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
 
-                    <!-- Message si aucune catégorie -->
+                    <!-- Si aucune catégorie -->
                     @if($categories->isEmpty())
-                        <div class="col-span-full text-center py-12 bg-white rounded-lg shadow">
-                            <p class="text-gray-600 mb-4">Aucune catégorie disponible pour le moment.</p>
+                        <div class="col-span-full text-center py-12 bg-gray-800 rounded-2xl shadow-soft">
+                            <p class="text-gray-400 mb-4">Aucune catégorie disponible pour le moment.</p>
                             <a href="{{ route('puzzles.create') }}" 
-                               class="inline-block px-6 py-3 bg-black text-white rounded-lg text-base font-semibold hover:bg-gray-900 shadow-md">
+                               class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition shadow-md">
                                 Créer le premier puzzle
                             </a>
                         </div>
@@ -99,26 +88,6 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-        }
-
-        /* Améliorations visuelles globales */
-        h2, h3, h4 {
-            letter-spacing: 0.5px;
-        }
-
-        .rounded-xl {
-            border-radius: 1rem !important;
-        }
-
-        /* Boutons noirs visibles */
-        a.bg-black {
-            background-color: #000000 !important;
-            color: #ffffff !important;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
-        }
-        a.bg-black:hover {
-            background-color: #1a1a1a !important;
-            transform: scale(1.02);
         }
     </style>
 </x-app-layout>

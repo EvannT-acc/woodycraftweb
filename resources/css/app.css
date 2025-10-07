@@ -1,3 +1,98 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- Thème sombre WoodyCraft --- */
+html, body {
+    background-color: #0f0f0f;
+    color: #e5e7eb;
+    transition: all 0.3s ease;
+    scroll-behavior: smooth;
+}
+
+a {
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+a:hover {
+    color: #38bdf8;
+    transform: translateY(-1px);
+}
+
+/* --- Animations globales --- */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient {
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+/* --- Effet carte et bouton --- */
+.card {
+    background-color: #1f2937;
+    border-radius: 1rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.button-primary {
+    background-color: #38bdf8;
+    color: #0f172a;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+.button-primary:hover {
+    background-color: #0ea5e9;
+    transform: scale(1.03);
+}
+
+/* --- Scrollbar personnalisée --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+/* --- Inputs stylisés --- */
+input, textarea, select {
+    background-color: #111827;
+    border: 1px solid #374151;
+    color: #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 5px #38bdf8;
+}
+
+/* --- Ombres douces --- */
+.shadow-soft {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Liens spéciaux accent --- */
+.text-accent {
+    color: #38bdf8;
+}
+.bg-accent {
+    background-color: #38bdf8;
+}
+.bg-accent:hover {
+    background-color: #0ea5e9;
+}
