@@ -11,19 +11,33 @@ use App\Models\Puzzle;
 class PanierController extends Controller
 {
     /**
-     * Afficher le panier de l'utilisateur connecté
+     * Afficher le panier (session ou utilisateur)
      */
     public function index()
     {
-        $user = Auth::user();
-
-        // Récupérer ou créer le panier de l'utilisateur
-        $panier = Panier::firstOrCreate(
-            ['user_id' => $user->id, 'status' => 0], // status 0 = panier en cours
-            ['total' => 0]
-        );
-
-        $lignes = $panier->lignes()->with('puzzle')->get();
+        if (Auth::check()) {
+            // 🔒 Utilisateur connecté : panier en BDD
+            $panier = Panier::firstOrCreate(
+                ['user_id' => Auth::id(), 'status' => 0],
+                ['total' => 0]
+            );
+            $lignes = $panier->lignes()->with('puzzle')->get();
+        } else {
+            // 🌐 Invité : panier stocké dans la session
+            $panier = (object)[
+                'id' => null,
+                'total' => 0,
+            ];
+            $sessionPanier = session('panier', []);
+            $lignes = collect($sessionPanier)->map(function ($item) {
+                $puzzle = Puzzle::find($item['puzzle_id']);
+                return (object)[
+                    'puzzle' => $puzzle,
+                    'quantite' => $item['quantite'],
+                ];
+            });
+            $panier->total = $lignes->sum(fn($l) => $l->puzzle->prix * $l->quantite);
+        }
 
         return view('paniers.index', compact('panier', 'lignes'));
     }
@@ -33,46 +47,51 @@ class PanierController extends Controller
      */
     public function add(Request $request, $puzzle_id)
     {
-        $user = Auth::user();
-        $panier = Panier::firstOrCreate(
-            ['user_id' => $user->id, 'status' => 0],
-            ['total' => 0]
-        );
-
         $puzzle = Puzzle::findOrFail($puzzle_id);
 
-        // Vérifier si le puzzle est en rupture
         if ($puzzle->stock < 1) {
             return back()->with('error', 'Ce produit est en rupture de stock.');
         }
 
-        // Vérifier si le puzzle est déjà dans le panier
-        $ligne = LignePanier::where('panier_id', $panier->id)
-            ->where('puzzle_id', $puzzle->id)
-            ->first();
+        if (Auth::check()) {
+            // 🔒 Utilisateur connecté : panier BDD
+            $panier = Panier::firstOrCreate(
+                ['user_id' => Auth::id(), 'status' => 0],
+                ['total' => 0]
+            );
 
-        if ($ligne) {
-            // Vérifier le stock disponible
-            if ($ligne->quantite >= $puzzle->stock) {
-                return back()->with('error', 'Stock insuffisant pour ajouter plus de ce produit.');
+            $ligne = LignePanier::where('panier_id', $panier->id)
+                ->where('puzzle_id', $puzzle->id)
+                ->first();
+
+            if ($ligne) {
+                if ($ligne->quantite >= $puzzle->stock) {
+                    return back()->with('error', 'Stock insuffisant pour ajouter plus de ce produit.');
+                }
+                $ligne->increment('quantite');
+            } else {
+                LignePanier::create([
+                    'panier_id' => $panier->id,
+                    'puzzle_id' => $puzzle->id,
+                    'quantite' => 1,
+                ]);
             }
 
-            // Incrémente la quantité
-            $ligne->quantite += 1;
-            $ligne->save();
+            $panier->total = $panier->lignes()->with('puzzle')->get()->sum(fn($l) => $l->puzzle->prix * $l->quantite);
+            $panier->save();
         } else {
-            LignePanier::create([
-                'panier_id' => $panier->id,
-                'puzzle_id' => $puzzle->id,
-                'quantite' => 1,
-            ]);
+            // 🌐 Invité : panier en session
+            $panier = session()->get('panier', []);
+            if (isset($panier[$puzzle_id])) {
+                $panier[$puzzle_id]['quantite']++;
+            } else {
+                $panier[$puzzle_id] = [
+                    'puzzle_id' => $puzzle_id,
+                    'quantite' => 1,
+                ];
+            }
+            session()->put('panier', $panier);
         }
-
-        // Recalculer le total global du panier
-        $panier->total = $panier->lignes()->with('puzzle')->get()->sum(function ($l) {
-            return $l->puzzle->prix * $l->quantite;
-        });
-        $panier->save();
 
         return back()->with('success', 'Produit ajouté au panier !');
     }
@@ -86,25 +105,27 @@ class PanierController extends Controller
             'quantite' => 'required|integer|min:1'
         ]);
 
-        $ligne = LignePanier::findOrFail($ligne_id);
-        $panier = $ligne->panier;
+        if (Auth::check()) {
+            $ligne = LignePanier::findOrFail($ligne_id);
+            $panier = $ligne->panier;
 
-        // Vérifier le stock disponible
-        if ($request->quantite > $ligne->puzzle->stock) {
-            return back()->with('error', 'Stock insuffisant pour cette quantité.');
+            if ($request->quantite > $ligne->puzzle->stock) {
+                return back()->with('error', 'Stock insuffisant.');
+            }
+
+            $ligne->update(['quantite' => $request->quantite]);
+            $panier->update([
+                'total' => $panier->lignes()->with('puzzle')->get()->sum(fn($l) => $l->puzzle->prix * $l->quantite),
+            ]);
+        } else {
+            $panier = session()->get('panier', []);
+            if (isset($panier[$ligne_id])) {
+                $panier[$ligne_id]['quantite'] = $request->quantite;
+                session()->put('panier', $panier);
+            }
         }
 
-        // Mettre à jour la quantité
-        $ligne->quantite = $request->quantite;
-        $ligne->save();
-
-        // Recalculer le total global du panier
-        $panier->total = $panier->lignes()->with('puzzle')->get()->sum(function ($l) {
-            return $l->puzzle->prix * $l->quantite;
-        });
-        $panier->save();
-
-        return back()->with('success', 'Quantité mise à jour avec succès.');
+        return back()->with('success', 'Quantité mise à jour.');
     }
 
     /**
@@ -112,17 +133,19 @@ class PanierController extends Controller
      */
     public function remove($ligne_id)
     {
-        $ligne = LignePanier::findOrFail($ligne_id);
-        $panier = $ligne->panier;
+        if (Auth::check()) {
+            $ligne = LignePanier::findOrFail($ligne_id);
+            $panier = $ligne->panier;
+            $ligne->delete();
 
-        // Supprimer la ligne
-        $ligne->delete();
-
-        // Recalculer le total global du panier
-        $panier->total = $panier->lignes()->with('puzzle')->get()->sum(function ($l) {
-            return $l->puzzle->prix * $l->quantite;
-        });
-        $panier->save();
+            $panier->update([
+                'total' => $panier->lignes()->with('puzzle')->get()->sum(fn($l) => $l->puzzle->prix * $l->quantite),
+            ]);
+        } else {
+            $panier = session()->get('panier', []);
+            unset($panier[$ligne_id]);
+            session()->put('panier', $panier);
+        }
 
         return back()->with('success', 'Produit retiré du panier.');
     }

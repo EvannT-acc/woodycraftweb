@@ -12,7 +12,7 @@
                 <!-- Navigation Links -->
                 <div class="hidden sm:flex space-x-6 ml-10">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')"
-                        class="text-gray-400 hover:text-accent transition font-medium">
+                        class="text-blue-400 hover:text-accent transition font-medium">
                         {{ __('Tableau de bord') }}
                     </x-nav-link>
                 </div>

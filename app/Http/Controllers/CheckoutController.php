@@ -11,9 +11,6 @@ use App\Models\LignePanier;
 
 class CheckoutController extends Controller
 {
-    /**
-     * Page de finalisation de commande (adresse + mode de paiement)
-     */
     public function index()
     {
         $user = Auth::user();
@@ -35,9 +32,6 @@ class CheckoutController extends Controller
         return view('checkout.index', compact('panier', 'lignes', 'adresse'));
     }
 
-    /**
-     * Validation de la commande : choix du paiement
-     */
     public function valider(Request $request)
     {
         $request->validate([
@@ -62,7 +56,6 @@ class CheckoutController extends Controller
             return back()->with('error', 'Votre panier est vide.');
         }
 
-        // Sauvegarde ou mise à jour de l'adresse
         DB::table('adresses')->updateOrInsert(
             ['user_id' => $user->id],
             [
@@ -92,7 +85,7 @@ class CheckoutController extends Controller
 
         // Gestion selon le mode de paiement
         if ($request->mode_paiement === 'cheque') {
-            return $this->facturePDFEtSupprimerPanier($user, $panier, $lignes);
+            return $this->factureCheque($user, $panier, $lignes);
         }
 
         if ($request->mode_paiement === 'carte') {
@@ -103,37 +96,25 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Paiement par carte bancaire (simulation + facture PDF)
+     * 💳 Paiement par carte : pas de PDF, simple redirection
      */
     private function paiementCarte($user, $panier, $lignes)
     {
-        $adresse = DB::table('adresses')->where('user_id', $user->id)->first();
-
-        $pdf = Pdf::loadView('pdf.facture', [
-            'user'    => $user,
-            'panier'  => $panier,
-            'lignes'  => $lignes,
-            'adresse' => $adresse,
-        ]);
-
-        $filename = 'facture_panier_' . $panier->id . '.pdf';
-        $content  = $pdf->output();
-
-        // Supprime panier et lignes
+        // Supprimer panier et lignes
         DB::transaction(function () use ($panier) {
             LignePanier::where('panier_id', $panier->id)->delete();
             $panier->delete();
         });
 
-        return response()->streamDownload(function () use ($content) {
-            echo $content;
-        }, $filename);
+        return redirect()
+            ->route('dashboard')
+            ->with('message', 'Paiement par carte effectué avec succès 💳');
     }
 
     /**
-     * Génération PDF pour chèque
+     * 🧾 Paiement par chèque : téléchargement du PDF + redirection auto
      */
-    private function facturePDFEtSupprimerPanier($user, $panier, $lignes)
+    private function factureCheque($user, $panier, $lignes)
     {
         $adresse = DB::table('adresses')->where('user_id', $user->id)->first();
 
@@ -147,19 +128,25 @@ class CheckoutController extends Controller
         $filename = 'facture_panier_' . $panier->id . '.pdf';
         $content  = $pdf->output();
 
+        // Supprimer le panier et ses lignes
         DB::transaction(function () use ($panier) {
             LignePanier::where('panier_id', $panier->id)->delete();
             $panier->delete();
         });
 
-        return response()->streamDownload(function () use ($content) {
-            echo $content;
-        }, $filename);
+        // Téléchargement immédiat + redirection JavaScript après
+        return response($content)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"')
+            ->setContent(
+                $content . '<script>
+                    setTimeout(() => {
+                        window.location.href = "'.route('dashboard').'?success='.urlencode('Votre paiement par chèque a bien été enregistré 🎉').'";
+                    }, 2000);
+                </script>'
+            );
     }
 
-    /**
-     * Redirection vers PayPal Sandbox
-     */
     private function redirigerVersPaypal($panier, $total)
     {
         $paypalBusiness = 'sb-xxxxxxxxxxxx@business.example.com';

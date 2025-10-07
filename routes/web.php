@@ -24,12 +24,12 @@ Route::get('/', function () {
 });
 
 // ---------------------------
-// Tableau de bord (protégé)
+// Tableau de bord (accessible à tous)
 // ---------------------------
 Route::get('/dashboard', function () {
     $categories = Categorie::with('puzzles')->get();
     return view('dashboard', compact('categories'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('dashboard');
 
 // ---------------------------
 // Catégories accessibles à tous
@@ -40,22 +40,17 @@ Route::get('/categories/{categorie}', function (Categorie $categorie) {
 })->name('categories.show');
 
 // ---------------------------
-// Routes protégées (auth requise)
+// Panier (accessible à tous)
+// ---------------------------
+Route::get('/panier', [PanierController::class, 'index'])->name('paniers.index');
+Route::post('/panier/add/{puzzle}', [PanierController::class, 'add'])->name('paniers.add');
+Route::delete('/panier/remove/{ligne}', [PanierController::class, 'remove'])->name('paniers.remove');
+Route::patch('/panier/update/{ligne}', [PanierController::class, 'update'])->name('paniers.update');
+
+// ---------------------------
+// Checkout (connexion obligatoire)
 // ---------------------------
 Route::middleware('auth')->group(function () {
-
-    // Profil utilisateur
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Panier
-    Route::get('/panier', [PanierController::class, 'index'])->name('paniers.index');
-    Route::post('/panier/add/{puzzle}', [PanierController::class, 'add'])->name('paniers.add');
-    Route::delete('/panier/remove/{ligne}', [PanierController::class, 'remove'])->name('paniers.remove');
-    Route::patch('/panier/update/{ligne}', [PanierController::class, 'update'])->name('paniers.update');
-
-    // Checkout
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/valider', [CheckoutController::class, 'valider'])->name('checkout.valider');
 });
@@ -97,6 +92,15 @@ Route::post('/paypal/ipn', function () {
 // CRUD puzzles (protégé)
 // ---------------------------
 Route::resource('puzzles', PuzzleController::class)->middleware('auth');
+
+// ---------------------------
+// Profil utilisateur (protégé)
+// ---------------------------
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 // ---------------------------
 // Authentification Breeze
