@@ -2,14 +2,10 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PuzzleController;
 use App\Http\Controllers\PanierController;
 use App\Http\Controllers\CheckoutController;
 use App\Models\Categorie;
-use App\Models\Panier;
-use App\Models\LignePanier;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +15,12 @@ use App\Models\LignePanier;
 |--------------------------------------------------------------------------
 */
 
+// ---------------------------
+// Page d'accueil
+// ---------------------------
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 // ---------------------------
 // Tableau de bord (accessible à tous)
@@ -40,7 +39,26 @@ Route::get('/categories/{categorie}', function (Categorie $categorie) {
 })->name('categories.show');
 
 // ---------------------------
-// Panier (accessible à tous)
+// Puzzles (partiellement protégés)
+// ---------------------------
+
+// Liste publique (accessible à tous)
+Route::get('/puzzles', [PuzzleController::class, 'index'])->name('puzzles.index');
+
+// Détails publics (accessible à tous, même sans connexion)
+Route::get('/puzzles/{puzzle}', [PuzzleController::class, 'show'])->name('puzzles.show');
+
+// Routes protégées — création, modification et suppression réservées aux utilisateurs connectés
+Route::middleware('auth')->group(function () {
+    Route::get('/puzzles/create', [PuzzleController::class, 'create'])->name('puzzles.create');
+    Route::post('/puzzles', [PuzzleController::class, 'store'])->name('puzzles.store');
+    Route::get('/puzzles/{puzzle}/edit', [PuzzleController::class, 'edit'])->name('puzzles.edit');
+    Route::put('/puzzles/{puzzle}', [PuzzleController::class, 'update'])->name('puzzles.update');
+    Route::delete('/puzzles/{puzzle}', [PuzzleController::class, 'destroy'])->name('puzzles.destroy');
+});
+
+// ---------------------------
+// Panier
 // ---------------------------
 Route::get('/panier', [PanierController::class, 'index'])->name('paniers.index');
 Route::post('/panier/add/{puzzle}', [PanierController::class, 'add'])->name('paniers.add');
@@ -54,44 +72,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout/valider', [CheckoutController::class, 'valider'])->name('checkout.valider');
 });
-
-// ---------------------------
-// Routes PayPal
-// ---------------------------
-Route::get('/paypal/success', function () {
-    $user = Auth::user();
-
-    if ($user) {
-        $panier = Panier::where('user_id', $user->id)
-            ->where('status', 1)
-            ->latest('updated_at')
-            ->first();
-
-        if ($panier) {
-            DB::transaction(function () use ($panier) {
-                LignePanier::where('panier_id', $panier->id)->delete();
-                $panier->delete();
-            });
-        }
-    }
-
-    return redirect()->route('dashboard')
-        ->with('success', 'Paiement PayPal réussi ! Merci pour votre commande.');
-})->middleware('auth')->name('paypal.success');
-
-Route::get('/paypal/cancel', function () {
-    return redirect()->route('paniers.index')
-        ->with('error', 'Paiement PayPal annulé.');
-})->name('paypal.cancel');
-
-Route::post('/paypal/ipn', function () {
-    return response('OK', 200);
-})->name('paypal.ipn');
-
-// ---------------------------
-// CRUD puzzles (protégé)
-// ---------------------------
-Route::resource('puzzles', PuzzleController::class)->middleware('auth');
 
 // ---------------------------
 // Profil utilisateur (protégé)

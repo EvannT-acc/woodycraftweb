@@ -2,13 +2,19 @@
     <x-slot name="header">
         <div class="text-gray-100">
             <h2 class="font-bold text-3xl leading-tight">{{ __('Tableau de bord') }}</h2>
-            <p class="text-gray-400 mt-1">
-                Bienvenue, <span class="font-semibold text-accent">{{ Auth::user()->prenom }} {{ Auth::user()->nom }}</span>
-                <span class="ml-2 px-2 py-1 text-xs rounded-full 
-                    {{ Auth::user()->role === 'admin' ? 'bg-red-600/30 text-red-400' : 'bg-green-600/30 text-green-400' }}">
-                    {{ ucfirst(Auth::user()->role) }}
-                </span>
-            </p>
+
+            @auth
+                <p class="text-gray-400 mt-1">
+                    Bienvenue, 
+                    <span class="font-semibold text-accent">{{ Auth::user()->prenom }} {{ Auth::user()->nom }}</span>
+                    <span class="ml-2 px-2 py-1 text-xs rounded-full 
+                        {{ Auth::user()->role === 'admin' ? 'bg-red-600/30 text-red-400' : 'bg-green-600/30 text-green-400' }}">
+                        {{ ucfirst(Auth::user()->role) }}
+                    </span>
+                </p>
+            @else
+                <p class="text-blue-400 mt-1 italic">Bienvenue sur le tableau des puzzles</p>
+            @endauth
         </div>
     </x-slot>
 
@@ -28,9 +34,8 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     @foreach($categories as $categorie)
-                        <div class="bg-gray-800 rounded-2xl shadow-soft overflow-hidden hover:shadow-xl transition-all duration-200 relative min-h-[340px] flex flex-col">
+                        <div class="bg-gray-800 rounded-2xl shadow-soft overflow-hidden hover:shadow-xl transition-all duration-200 relative min-h-[380px] flex flex-col">
                             
-                            <!-- Image sans animation -->
                             <div class="relative w-full h-48 overflow-hidden">
                                 @if($categorie->image)
                                     <img src="{{ asset('images/categories/' . $categorie->image) }}" 
@@ -54,8 +59,8 @@
                                     <span>{{ $categorie->puzzles->count() }} puzzle(s)</span>
                                 </div>
 
-                                <!-- Bouton -->
-                                <div class="mt-4">
+                                <div class="mt-auto space-y-3">
+                                    <!-- Voir les puzzles -->
                                     <a href="{{ route('categories.show', $categorie->id) }}" 
                                        class="block text-center px-4 py-3 rounded-lg font-semibold text-base transition duration-200
                                               bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg">
@@ -66,14 +71,15 @@
                         </div>
                     @endforeach
 
-                    <!-- Si aucune catégorie -->
                     @if($categories->isEmpty())
                         <div class="col-span-full text-center py-12 bg-gray-800 rounded-2xl shadow-soft">
                             <p class="text-gray-400 mb-4">Aucune catégorie disponible pour le moment.</p>
-                            <a href="{{ route('puzzles.create') }}" 
-                               class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition shadow-md">
-                                Créer le premier puzzle
-                            </a>
+                            @auth
+                                <a href="{{ route('puzzles.create') }}" 
+                                   class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition shadow-md">
+                                    Créer le premier puzzle
+                                </a>
+                            @endauth
                         </div>
                     @endif
                 </div>

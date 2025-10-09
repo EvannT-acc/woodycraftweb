@@ -8,6 +8,7 @@
     <div class="py-10 bg-gray-900 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
+            {{-- Messages de succès ou d’erreur --}}
             @if(session('success'))
                 <div class="mb-6 p-4 bg-green-700/30 text-green-300 rounded-lg shadow-soft">
                     {{ session('success') }}
@@ -49,46 +50,68 @@
                                                  class="w-14 h-14 object-cover rounded-lg shadow-md">
                                             <span class="font-medium">{{ $ligne->puzzle->nom }}</span>
                                         </td>
+
                                         <td class="p-3">{{ number_format($ligne->puzzle->prix, 2, ',', ' ') }} €</td>
 
                                         <td class="p-3">
-                                            <form action="{{ route('paniers.update', $ligne->id) }}" method="POST" class="flex items-center space-x-2">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="number" name="quantite" value="{{ $ligne->quantite }}" 
-                                                       min="1" max="{{ $ligne->puzzle->stock }}" 
-                                                       class="w-16 bg-gray-900 border border-gray-600 rounded p-1 text-center text-gray-100 focus:ring-accent focus:border-accent">
-                                                <button type="submit" 
-                                                        class="px-3 py-1 bg-accent text-gray-900 text-xs font-semibold rounded hover:bg-blue-400 transition">
-                                                    Mettre à jour
-                                                </button>
-                                            </form>
+                                            @auth
+                                                <form action="{{ route('paniers.update', $ligne->id) }}" method="POST" class="flex items-center space-x-2">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="number" 
+                                                           name="quantite" 
+                                                           value="{{ $ligne->quantite }}" 
+                                                           min="1" 
+                                                           max="{{ $ligne->puzzle->stock }}" 
+                                                           class="w-16 bg-gray-900 border border-gray-600 rounded p-1 text-center text-gray-100 focus:ring-accent focus:border-accent">
+                                                    <button type="submit" 
+                                                            class="px-3 py-1 bg-accent text-gray-900 text-xs font-semibold rounded hover:bg-blue-400 transition">
+                                                        Mettre à jour
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <div class="flex items-center space-x-2">
+                                                    <input type="number" disabled value="{{ $ligne->quantite }}" 
+                                                           class="w-16 bg-gray-900 border border-gray-700 rounded p-1 text-center text-gray-500 cursor-not-allowed">
+                                                    <span class="text-xs text-gray-500 italic">Connexion requise</span>
+                                                </div>
+                                            @endauth
                                             <small class="text-gray-500">Stock dispo : {{ $ligne->puzzle->stock }}</small>
                                         </td>
 
                                         <td class="p-3 font-semibold text-gray-100">
                                             {{ number_format($ligne->puzzle->prix * $ligne->quantite, 2, ',', ' ') }} €
                                         </td>
+
                                         <td class="p-3 text-right">
-                                            <form action="{{ route('paniers.remove', $ligne->id) }}" method="POST" onsubmit="return confirm('Supprimer ce produit ?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="px-3 py-1 bg-red-600/80 text-white text-sm rounded hover:bg-red-600 transition">
-                                                    Supprimer
-                                                </button>
-                                            </form>
+                                            @auth
+                                                <form action="{{ route('paniers.remove', $ligne->id) }}" 
+                                                      method="POST" 
+                                                      onsubmit="return confirm('Supprimer ce produit ?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="px-3 py-1 bg-red-600/80 text-white text-sm rounded hover:bg-red-600 transition">
+                                                        Supprimer
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-gray-500 text-sm italic">Connexion requise</span>
+                                            @endauth
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
 
+                        <!-- Total -->
                         <div class="mt-8 text-right">
                             <h3 class="text-xl font-bold text-gray-100">
                                 Total : <span class="text-accent">{{ number_format($panier->total, 2, ',', ' ') }} €</span>
                             </h3>
                         </div>
 
+                        <!-- Bouton commande -->
                         <div class="mt-8 text-right">
                             @auth
                                 <a href="{{ route('checkout.index') }}" 

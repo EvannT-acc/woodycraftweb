@@ -27,6 +27,7 @@ class CheckoutController extends Controller
         $total = $lignes->sum(fn($l) => $l->puzzle->prix * $l->quantite);
         $panier->update(['total' => $total]);
 
+        // Récupérer l'adresse de l'utilisateur (s'il y en a une)
         $adresse = DB::table('adresses')->where('user_id', $user->id)->first();
 
         return view('checkout.index', compact('panier', 'lignes', 'adresse'));
@@ -35,12 +36,12 @@ class CheckoutController extends Controller
     public function valider(Request $request)
     {
         $request->validate([
-            'numero'        => 'required|string|max:50',
-            'rue'           => 'required|string|max:150',
-            'ville'         => 'required|string|max:100',
-            'code_postal'   => 'required|string|max:20',
-            'pays'          => 'required|string|max:100',
-            'mode_paiement' => 'required|in:cheque,paypal,carte',
+            'mode_paiement' => 'required|in:cheque,paypal,carte', // Ajout du mode carte
+            'numero'         => 'required|string|max:50',
+            'rue'            => 'required|string|max:150',
+            'ville'          => 'required|string|max:100',
+            'code_postal'    => 'required|string|max:20',
+            'pays'           => 'required|string|max:100',
         ]);
 
         $user = Auth::user();
@@ -56,6 +57,7 @@ class CheckoutController extends Controller
             return back()->with('error', 'Votre panier est vide.');
         }
 
+        // Mise à jour ou création de l'adresse de l'utilisateur
         DB::table('adresses')->updateOrInsert(
             ['user_id' => $user->id],
             [
@@ -69,10 +71,9 @@ class CheckoutController extends Controller
         );
 
         $total = $lignes->sum(fn($l) => $l->puzzle->prix * $l->quantite);
-
         $panier->update([
-            'status'        => 1,
-            'mode_paiement' => $request->mode_paiement,
+            'status'        => 1, // Statut du panier payé
+            'mode_paiement' => $request->mode_paiement, // Mode de paiement (PayPal, carte ou chèque)
             'total'         => $total,
         ]);
 
@@ -83,7 +84,7 @@ class CheckoutController extends Controller
             'total'   => 0,
         ]);
 
-        // Gestion selon le mode de paiement
+        // Traitement selon le mode de paiement
         if ($request->mode_paiement === 'cheque') {
             return $this->factureCheque($user, $panier, $lignes);
         }
@@ -96,7 +97,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * 💳 Paiement par carte : pas de PDF, simple redirection
+     * 💳 Paiement par carte : suppression du panier + redirection
      */
     private function paiementCarte($user, $panier, $lignes)
     {
@@ -106,18 +107,20 @@ class CheckoutController extends Controller
             $panier->delete();
         });
 
+        // Rediriger vers le tableau de bord avec un message de succès
         return redirect()
             ->route('dashboard')
             ->with('message', 'Paiement par carte effectué avec succès 💳');
     }
 
     /**
-     * 🧾 Paiement par chèque : téléchargement du PDF + redirection auto
+     * 🧾 Paiement par chèque : génération de la facture PDF et téléchargement
      */
     private function factureCheque($user, $panier, $lignes)
     {
         $adresse = DB::table('adresses')->where('user_id', $user->id)->first();
 
+        // Générer la facture PDF
         $pdf = Pdf::loadView('pdf.facture', [
             'user'    => $user,
             'panier'  => $panier,
@@ -128,72 +131,28 @@ class CheckoutController extends Controller
         $filename = 'facture_panier_' . $panier->id . '.pdf';
         $content  = $pdf->output();
 
-        // Supprimer le panier et ses lignes
+        // Supprimer le panier et ses lignes après la génération du PDF
         DB::transaction(function () use ($panier) {
             LignePanier::where('panier_id', $panier->id)->delete();
             $panier->delete();
         });
 
-        // Téléchargement immédiat + redirection JavaScript après
+        // Téléchargement immédiat + redirection après 2 secondes
         return response($content)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="'.$filename.'"')
             ->setContent(
                 $content . '<script>
-                    setTimeout(() => {
-                        window.location.href = "'.route('dashboard').'?success='.urlencode('Votre paiement par chèque a bien été enregistré 🎉').'";
-                    }, 2000);
+                    setTimeout(() => { window.location.href = "'.route('dashboard').'?success='.urlencode('Votre paiement par chèque a bien été enregistré 🎉').'"; }, 2000);
                 </script>'
             );
     }
 
     private function redirigerVersPaypal($panier, $total)
     {
-        $paypalBusiness = 'sb-xxxxxxxxxxxx@business.example.com';
-        $paypalUrl = 'https://www.sandbox.paypal.com/cgi-bin/webscr?' . http_build_query([
-            'cmd'           => '_xclick',
-            'business'      => $paypalBusiness,
-            'item_name'     => 'Commande WoodyCraft #' . $panier->id,
-            'amount'        => number_format($total, 2, '.', ''),
-            'currency_code' => 'EUR',
-            'return'        => route('paypal.success', ['id' => $panier->id]),
-            'cancel_return' => route('paypal.cancel'),
-            'notify_url'    => route('paypal.ipn'),
-        ]);
+        $paypalUrl = 'https://www.paypal.com/fr/home'; // Redirection vers la page d'accueil de PayPal
 
+        // Rediriger l'utilisateur vers PayPal
         return redirect()->away($paypalUrl);
-    }
-
-    public function paypalSuccess(Request $request)
-    {
-        $user = Auth::user();
-        $panierId = $request->query('id');
-
-        if (!$panierId) {
-            return redirect()->route('dashboard')->with('error', 'Identifiant de commande manquant.');
-        }
-
-        $panier = Panier::find($panierId);
-
-        if (!$panier || $panier->status != 1) {
-            return redirect()->route('dashboard')->with('error', 'Commande introuvable ou déjà traitée.');
-        }
-
-        DB::transaction(function () use ($panier) {
-            LignePanier::where('panier_id', $panier->id)->delete();
-            $panier->delete();
-        });
-
-        return redirect()->route('dashboard')->with('message', 'Paiement PayPal confirmé 🎉');
-    }
-
-    public function paypalCancel()
-    {
-        return redirect()->route('dashboard')->with('error', 'Paiement annulé par l’utilisateur.');
-    }
-
-    public function paypalIpn(Request $request)
-    {
-        return response('OK', 200);
     }
 }

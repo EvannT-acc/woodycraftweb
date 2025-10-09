@@ -13,7 +13,7 @@
     <div class="absolute inset-0 -z-10 bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 animate-gradient"></div>
     <canvas id="bgCanvas" class="absolute inset-0 -z-10"></canvas>
 
-    <!-- Navigation simplifiée -->
+    <!-- Navigation -->
     <div class="p-6 text-right max-w-7xl mx-auto">
         @if (Route::has('login'))
             @auth
@@ -35,25 +35,25 @@
         </p>
 
         <div class="space-x-4">
-            @auth
-                <a href="{{ route('dashboard') }}" 
-                   class="bg-accent text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-blue-400 transition shadow-soft">
-                    Accéder au tableau de bord
-                </a>
-            @else
+            <a href="{{ route('dashboard') }}" 
+               class="bg-accent text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-blue-400 transition shadow-soft">
+                Accéder au tableau de bord
+            </a>
+
+            @guest
                 <a href="{{ route('login') }}" 
-                   class="bg-accent text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-blue-400 transition shadow-soft">
+                   class="bg-gray-800 border border-accent text-accent px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition">
                     Se connecter
                 </a>
                 <a href="{{ route('register') }}" 
                    class="bg-gray-800 border border-accent text-accent px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition">
                     S'inscrire
                 </a>
-            @endauth
+            @endguest
         </div>
     </div>
 
-    <!-- Animation légère -->
+    <!-- Animation -->
     <script>
         const c = document.getElementById('bgCanvas');
         const ctx = c.getContext('2d');
