@@ -66,4 +66,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Panier::class);
     }
+
+    public function avis()
+    {
+        return $this->hasMany(Avis::class);
+    }
 }

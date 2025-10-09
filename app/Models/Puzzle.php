@@ -27,4 +27,9 @@ class Puzzle extends Model
     {
         return asset('storage/' . ($this->image_path ?: 'placeholders/puzzle.png'));
     }
+
+    public function avis()
+    {
+       return $this->hasMany(Avis::class);
+    }
 }
